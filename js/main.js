@@ -51,6 +51,7 @@ window.onBanditAmountChange = onBanditAmountChange;
 
 const launchBandit = (isAllIn) => {
   const userBankDisplay = document.getElementById('userBank');
+  const banditAmountContainer = document.getElementById('banditAmountContainer');
   const firstSlotDisplay = document.getElementById('firstSlotDisplay');
   const secondSlotDisplay = document.getElementById('secondSlotDisplay');
   const thirdSlotDisplay = document.getElementById('thirdSlotDisplay');
@@ -69,6 +70,10 @@ const launchBandit = (isAllIn) => {
   secondSlotDisplay.classList.remove('jackpot');
   thirdSlotDisplay.classList.remove('jackpot');
   banditResultsDisplay.innerHTML = '...';
+
+  if (isAllIn) {
+    banditAmountContainer.innerHTML = 'ALL IN !';
+  }
 
   let amount = isAllIn ? currentUserBank : currentBanditAmount;
   currentUserBank -= amount;
@@ -112,20 +117,20 @@ const launchBandit = (isAllIn) => {
         if (banditSlots.firstSlot === banditSlots.secondSlot && banditSlots.firstSlot === banditSlots.thirdSlot) {
           if (banditSlots.firstSlot === 7) {
             gains = isAllIn ? amount * 20 : amount * 10;
-            banditResultsDisplay.innerHTML = '⭐⭐⭐ JACKPOT ⭐⭐⭐';
+            banditResultsDisplay.innerHTML = `⭐⭐⭐ JACKPOT ⭐⭐⭐<br>Gains : ${gains} €`;
             firstSlotDisplay.classList.add('jackpot');
             secondSlotDisplay.classList.add('jackpot');
             thirdSlotDisplay.classList.add('jackpot');
           } else {
             gains = isAllIn ? amount * 8 : amount * 4;
-            banditResultsDisplay.innerHTML = '⭐⭐ 3 slots identiques ⭐⭐';
+            banditResultsDisplay.innerHTML = `⭐⭐ 3 slots identiques ⭐⭐<br>Gains : ${gains} €`;
             firstSlotDisplay.classList.add('winning');
             secondSlotDisplay.classList.add('winning');
             thirdSlotDisplay.classList.add('winning');
           }
         } else if (banditSlots.firstSlot === banditSlots.secondSlot || banditSlots.secondSlot === banditSlots.thirdSlot || banditSlots.firstSlot === banditSlots.thirdSlot) {
           gains = isAllIn ? amount * 4 : amount * 2;
-          banditResultsDisplay.innerHTML = '⭐ 2 slots identiques ⭐';
+          banditResultsDisplay.innerHTML = `⭐ 2 slots identiques ⭐<br>Gains : ${gains} €`;
           if (banditSlots.firstSlot === banditSlots.secondSlot) {
             firstSlotDisplay.classList.add('winning');
             secondSlotDisplay.classList.add('winning');
@@ -137,15 +142,27 @@ const launchBandit = (isAllIn) => {
             thirdSlotDisplay.classList.add('winning');
           }
         } else {
-          banditResultsDisplay.innerHTML = 'PERDU';
+          banditResultsDisplay.innerHTML = isAllIn || currentUserBank <= 0 ? 'PERDU<br>Vous êtes ruiné' : 'PERDU';
         }
         currentUserBank += gains;
         userBankDisplay.innerHTML = `${currentUserBank} €`;
-        document.getElementById('banditAmountInput').setAttribute('max', currentBanditAmount);
-        buttonsContainer.innerHTML = `
-          <button id="launchBanditButton" onclick="onLaunchBanditClick(false)" class="lzr-button lzr-solid lzr-primary lzr-margin-bottom" style="width: 100%; height: 12svh;">Lancer</button>
-          <button id="allInButton" onclick="onLaunchBanditClick(true)" class="lzr-button lzr-solid lzr-primary lzr-margin-bottom" style="width: 100%; height: 12svh;">All in !</button>
+        banditAmountContainer.innerHTML = `
+        <input 
+          type="number" 
+          id="banditAmountInput" 
+          min="1" 
+          max="${currentUserBank}" 
+          step="1" 
+          value="${currentBanditAmount}" 
+          onchange="onBanditAmountChange(event)" />
+        <span>€</span>
         `;
+        if (currentUserBank > 0) {
+          buttonsContainer.innerHTML = `
+            <button id="launchBanditButton" onclick="onLaunchBanditClick(false)" class="lzr-button lzr-solid lzr-primary">Lancer</button>
+            <button id="allInButton" onclick="onLaunchBanditClick(true)" class="lzr-button lzr-solid lzr-primary all-in">All in !</button>
+          `;
+        }
       }, 1000);
     }, 1000);
   }, 2000);
@@ -177,7 +194,7 @@ MAIN.innerHTML = `
 </div>
 <div class="bandit-amount-display lzr-margin-bottom">
   <span>Mise actuelle</span>
-  <span>
+  <span id="banditAmountContainer">
     <input 
       type="number" 
       id="banditAmountInput" 
@@ -190,13 +207,13 @@ MAIN.innerHTML = `
   </span>
 </div>
 <div class="bandit-container lzr-margin-bottom">
-  <span id="firstSlotDisplay" class="bandit-slot finished jackpot">💯</span>
-  <span id="secondSlotDisplay" class="bandit-slot finished jackpot">💯</span>
-  <span id="thirdSlotDisplay" class="bandit-slot finished jackpot">💯</span>
+  <span id="firstSlotDisplay" class="bandit-slot shiny finished jackpot">💯</span>
+  <span id="secondSlotDisplay" class="bandit-slot shiny finished jackpot">💯</span>
+  <span id="thirdSlotDisplay" class="bandit-slot shiny finished jackpot">💯</span>
 </div>
-<span id="banditResults" class="bandit-results lzr-margin-bottom">...</span>
+<span id="banditResults" class="bandit-results lzr-margin-bottom"></span>
 <div id="buttonsContainer" class="buttons-container">
-  <button id="launchBanditButton" onclick="onLaunchBanditClick(false)" class="lzr-button lzr-solid lzr-primary lzr-margin-bottom" style="width: 100%; height: 12svh;">Lancer</button>
-  <button id="allInButton" onclick="onLaunchBanditClick(true)" class="lzr-button lzr-solid lzr-primary lzr-margin-bottom" style="width: 100%; height: 12svh;">All in !</button>
+  <button id="launchBanditButton" onclick="onLaunchBanditClick(false)" class="lzr-button lzr-solid lzr-primary">Lancer</button>
+  <button id="allInButton" onclick="onLaunchBanditClick(true)" class="lzr-button lzr-solid lzr-primary all-in">All in !</button>
 </div>
 `;
